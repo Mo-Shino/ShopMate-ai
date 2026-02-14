@@ -15,6 +15,7 @@ interface ChatState {
     isTyping: boolean;
     addMessage: (message: Message) => void;
     setTyping: (typing: boolean) => void;
+    clearChat: () => void;
 }
 
 export const useChatStore = create<ChatState>((set) => ({
@@ -30,4 +31,15 @@ export const useChatStore = create<ChatState>((set) => ({
     addMessage: (message) =>
         set((state) => ({ messages: [...state.messages, message] })),
     setTyping: (typing) => set({ isTyping: typing }),
+    clearChat: () => set({
+        messages: [
+            {
+                id: '1',
+                text: 'أهلاً بك في فتح الله! أنا مساعدك الذكي. تحب أساعدك في إيه النهاردة؟',
+                sender: 'bot',
+                timestamp: new Date(),
+            },
+        ],
+        isTyping: false
+    }),
 }));
