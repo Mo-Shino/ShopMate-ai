@@ -6,7 +6,7 @@ import { useCartStore } from "@/stores/useCartStore";
 import products from "@/lib/products.json";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle, Scan, X, Zap } from "lucide-react";
-import clsx from "clsx";
+
 
 export default function ScanPage() {
     const [, setResult] = useState("");
