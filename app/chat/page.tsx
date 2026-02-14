@@ -5,8 +5,8 @@ import { Bot, User, ArrowUp } from "lucide-react";
 import { useChatStore, Message } from "@/stores/useChatStore";
 import { useCartStore } from "@/stores/useCartStore";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
 import clsx from "clsx";
+import PageHeader from "@/components/PageHeader";
 
 export default function ChatPage() {
     const { messages, addMessage, isTyping, setTyping } = useChatStore();
@@ -81,7 +81,7 @@ export default function ChatPage() {
                                 price: 0
                             });
                         });
-                        botText += "\n\n✅ *Has been added to cart.*";
+                        botText += "\n\n✅ *Has been added to your shopping list.*";
                     }
                 }
             } catch (e) {
@@ -117,38 +117,7 @@ export default function ChatPage() {
         <div className="flex flex-col h-full bg-bg-cream relative overflow-hidden font-fredoka">
 
             {/* Header: Designed to match Figma */}
-            <header className="px-6 py-4 flex items-center justify-between bg-bg-cream z-10 shadow-sm md:shadow-none">
-
-                {/* Left: ShopMate Logo (SVG) */}
-                <div className="w-24 md:w-32">
-                    <Image
-                        src="/ShopMate_logo.svg"
-                        alt="Shop Mate AI"
-                        width={120}
-                        height={60}
-                        className="object-contain"
-                        priority
-                    />
-                </div>
-
-                {/* Center: Title */}
-                <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-2">
-                    <h1 className="font-bold text-2xl md:text-3xl text-primary-brown">Chat Bot</h1>
-                    <Bot className="w-6 h-6 md:w-8 md:h-8 text-primary-brown" strokeWidth={2.5} />
-                </div>
-
-                {/* Right: Fathallah Logo */}
-                <div className="w-16 md:w-20">
-                    <Image
-                        src="/fathallah_logo.svg"
-                        alt="Fathallah"
-                        width={80}
-                        height={80}
-                        className="object-contain"
-                        priority
-                    />
-                </div>
-            </header>
+            <PageHeader title="Chat Bot" icon={Bot} />
 
 
             {/* Messages Area */}
@@ -217,7 +186,7 @@ export default function ChatPage() {
                                                             // Optional: Add feedback toast here
                                                         }}
                                                         className="bg-brand-orange text-white p-2 rounded-lg hover:bg-[#d67d3c] transition-colors"
-                                                        title="Add to Cart"
+                                                        title="Add to List"
                                                     >
                                                         <div className="w-5 h-5 flex items-center justify-center">+</div>
                                                     </button>

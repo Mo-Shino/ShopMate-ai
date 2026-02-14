@@ -2,10 +2,10 @@
 
 import { useCartStore } from "@/stores/useCartStore";
 import { Trash2, Plus, ListChecks, Check, X, Edit2, Save } from "lucide-react";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
 import { useState, useMemo } from "react";
+import PageHeader from "@/components/PageHeader";
 
 export default function ListPage() {
     const { cart, removeFromCart, toggleItemCheck, addToCart, updateItem } = useCartStore();
@@ -65,37 +65,7 @@ export default function ListPage() {
         <div className="flex flex-col h-full bg-[#dbe3c9] relative font-fredoka overflow-hidden">
 
             {/* Header: Exact match to Chat Page */}
-            <header className="px-6 py-4 flex items-center justify-between bg-[#dbe3c9] z-10 shadow-sm md:shadow-none">
-
-                {/* Left: ShopMate Logo (SVG) */}
-                <div className="w-24 md:w-32">
-                    <Image
-                        src="/ShopMate_logo.svg"
-                        alt="Shop Mate AI"
-                        width={120}
-                        height={60}
-                        className="object-contain"
-                        priority
-                    />
-                </div>
-
-                {/* Center: Title */}
-                <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-2">
-                    <h1 className="font-bold text-2xl md:text-3xl text-[#69482d]">Shopping List</h1>
-                    <ListChecks className="w-6 h-6 md:w-8 md:h-8 text-[#69482d]" strokeWidth={2.5} />
-                </div>
-
-                {/* Right: Fathallah Logo */}
-                <div className="w-16 md:w-20">
-                    <Image
-                        src="/fathallah_logo.svg"
-                        alt="Fathallah"
-                        width={80}
-                        height={80}
-                        className="object-contain" // Fixed missing quote
-                    />
-                </div>
-            </header>
+            <PageHeader title="Shopping List" icon={ListChecks} className="bg-[#dbe3c9]" />
 
             {/* Total Price Banner (if > 0) */}
             <AnimatePresence>
