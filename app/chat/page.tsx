@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react";
 import { Bot, User, ArrowUp } from "lucide-react";
 import { useChatStore, Message } from "@/stores/useChatStore";
 import { useCartStore } from "@/stores/useCartStore";
-import productsData from "@/lib/products.json";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import clsx from "clsx";
@@ -50,7 +49,7 @@ export default function ChatPage() {
             }
 
             let botText = data.response;
-            let suggestedProducts: any[] = [];
+            let suggestedProducts: Array<{ id?: string; name: string; category?: string; reason?: string; is_sponsored?: boolean; price?: number }> = [];
             let shouldAddToCart = false;
 
             // Attempt to parse JSON response from the bot
@@ -73,11 +72,12 @@ export default function ChatPage() {
                     // Auto-Add Logic
                     if (shouldAddToCart) {
                         const { addToCart } = useCartStore.getState();
-                        suggestedProducts.forEach((p: any) => {
+                        suggestedProducts.forEach((p) => {
                             // Use placeholder price if missing, ensuring No Price rule doesn't break logic
                             addToCart({
-                                ...p,
                                 id: p.id || Math.random().toString(36).substr(2, 9),
+                                name: p.name,
+                                category: p.category || "General",
                                 price: 0
                             });
                         });
