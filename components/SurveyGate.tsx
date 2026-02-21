@@ -170,6 +170,18 @@ export default function SurveyGate({ children }: { children: React.ReactNode }) 
                                         COMING SOON
                                     </span>
                                 </motion.div>
+
+                                {/* Back to survey */}
+                                <motion.a
+                                    href="/?reset=survey"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: 0.7 }}
+                                    className="mt-4 inline-block text-xs font-medium underline underline-offset-4 opacity-40 hover:opacity-70 transition-opacity"
+                                    style={{ color: '#dbe3c9' }}
+                                >
+                                    أعد الاستبيان 🔄
+                                </motion.a>
                             </div>
 
                             {/* Decorative bottom stripe */}
