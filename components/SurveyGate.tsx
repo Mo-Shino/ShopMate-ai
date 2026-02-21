@@ -171,16 +171,37 @@ export default function SurveyGate({ children }: { children: React.ReactNode }) 
                                     </span>
                                 </motion.div>
 
-                                {/* Back to survey */}
+                                {/* Back to survey — styled button */}
                                 <motion.a
                                     href="/?reset=survey"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ delay: 0.7 }}
-                                    className="mt-4 inline-block text-xs font-medium underline underline-offset-4 opacity-40 hover:opacity-70 transition-opacity"
-                                    style={{ color: '#dbe3c9' }}
+                                    initial={{ opacity: 0, y: 6 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.75, type: "spring", stiffness: 260 }}
+                                    whileHover={{ y: -2, scale: 1.02 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    className="mt-5 inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold transition-all duration-200"
+                                    style={{
+                                        color: '#dbe3c9',
+                                        border: '1.5px solid rgba(219,227,201,0.35)',
+                                        background: 'rgba(219,227,201,0.08)',
+                                        fontFamily: 'var(--font-fredoka)',
+                                        letterSpacing: '0.03em',
+                                        textDecoration: 'none',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        const el = e.currentTarget as HTMLAnchorElement;
+                                        el.style.background = 'rgba(219,227,201,0.15)';
+                                        el.style.borderColor = 'rgba(219,227,201,0.6)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        const el = e.currentTarget as HTMLAnchorElement;
+                                        el.style.background = 'rgba(219,227,201,0.08)';
+                                        el.style.borderColor = 'rgba(219,227,201,0.35)';
+                                    }}
                                 >
-                                    أعد الاستبيان 🔄
+                                    <span className="text-base">📋</span>
+                                    أعد الاستبيان
+                                    <span className="text-base">←</span>
                                 </motion.a>
                             </div>
 

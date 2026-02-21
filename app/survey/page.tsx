@@ -72,6 +72,40 @@ const questions: Question[] = [
     },
 ];
 
+// ── Solution Reveals (shown after Q1–Q4) ───────────────────────────────────
+const reveals = [
+    {
+        emoji: "📝✨",
+        title: "جبنالك الحل: القائمة الذكية",
+        desc: "عمرك ما هتنسى حاجة تاني! اللستة بتتنقل للعربية وترتبلك مسارك جوه الفرع عشان تخلص في إنجاز.",
+        color: "#e07b37",
+    },
+    {
+        emoji: "🏷️🎯",
+        title: "جبنالك الحل: رادار العروض",
+        desc: "وداعاً للّف على الفاضي! الشاشة هتنبهك فوراً بالعروض الحصرية أول ما تقرب من الممر بتاعها.",
+        color: "#e07b37",
+    },
+    {
+        emoji: "🔲📱",
+        title: "جبنالك الحل: الماسح الضوئي",
+        desc: "مفيش حيرة تاني! امسح باركود أي منتج وهتعرف سعره وتفاصيله في ثانية واحدة.",
+        color: "#e07b37",
+    },
+    {
+        emoji: "🎮👶",
+        title: "جبنالك الحل: وضع الأطفال",
+        desc: "تسوق برواق! الشاشة بتقدم ألعاب تعليمية ممتعة تلهي أطفالك، عشان تخلص طلباتك بتركيز.",
+        color: "#e07b37",
+    },
+    {
+        emoji: "🤖✨",
+        title: "والمفاجأة الكبرى.. المساعد الذكي",
+        desc: "كل المشاكل اللي فاتت دي، وأي فكرة لسه كاتبها.. ShopMate AI هيحلها بذكاء! وفرنالك شات بوت متكامل في عربيتك، بيفهمك، بيرد على أسئلتك، وبيقترحلك وصفات أكل بناءً على العروض المتاحة.. جاهز للمستقبل؟",
+        color: "#e07b37",
+    },
+];
+
 // ── Helpers ────────────────────────────────────────────────────────────────
 function setCookie(name: string, value: string, days: number) {
     const expires = new Date(Date.now() + days * 864e5).toUTCString();
@@ -82,6 +116,12 @@ const slideVariants = {
     enter: (dir: number) => ({ x: dir > 0 ? "110%" : "-110%", opacity: 0, scale: 0.97 }),
     center: { x: 0, opacity: 1, scale: 1 },
     exit: (dir: number) => ({ x: dir < 0 ? "110%" : "-110%", opacity: 0, scale: 0.97 }),
+};
+
+const revealVariants = {
+    enter: { y: 40, opacity: 0, scale: 0.95 },
+    center: { y: 0, opacity: 1, scale: 1 },
+    exit: { y: -30, opacity: 0, scale: 0.97 },
 };
 
 // ── Feature list for intro ─────────────────────────────────────────────────
@@ -103,17 +143,26 @@ export default function SurveyPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedValue, setSelectedValue] = useState<string | null>(null);
     const [textInput, setTextInput] = useState("");
+    // Reveal state
+    const [showReveal, setShowReveal] = useState(false);
+    const [revealIndex, setRevealIndex] = useState(0);
 
     const question = questions[currentIndex];
-    const progress = ((currentIndex + 1) / questions.length) * 100;
+    // Progress includes reveals: each reveal + question as a step
+    const totalSteps = questions.length + reveals.length; // 9 total
+    // currentStep: Q0=0, reveal0=1, Q1=2, reveal1=3, Q2=4, reveal2=5, Q3=6, reveal3=7, Q4=8
+    const currentStep = showReveal
+        ? currentIndex * 2 + 1
+        : currentIndex === 4
+            ? 8
+            : currentIndex * 2;
+    const progress = ((currentStep + 1) / totalSteps) * 100;
 
     // ── INTRO SCREEN ──────────────────────────────────────────────────────
     if (!introShown) {
         return (
             <div className="fixed inset-0 flex flex-col overflow-y-auto" style={{ background: '#dbe3c9' }}>
                 <div className="flex flex-col items-center px-6 py-12 max-w-3xl mx-auto w-full">
-
-                    {/* Logo */}
                     <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
                         className="flex items-center gap-3 mb-8">
                         <Image src="/ShopMate_logo.svg" alt="ShopMate" width={40} height={40} />
@@ -139,7 +188,6 @@ export default function SurveyPage() {
                         لتسهيل رحلتك وتوفير وقتك ومجهودك.
                     </motion.p>
 
-                    {/* Feature Cards */}
                     <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
                         {features.map((f, i) => (
                             <motion.div key={f.title}
@@ -157,7 +205,6 @@ export default function SurveyPage() {
                         ))}
                     </div>
 
-                    {/* CTA */}
                     <motion.button
                         initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 1.0, type: "spring", stiffness: 260 }}
@@ -197,18 +244,38 @@ export default function SurveyPage() {
     const handleChoiceAnswer = async (value: string) => {
         if (selectedValue) return;
         setSelectedValue(value);
-        await new Promise((r) => setTimeout(r, 380));
+        await new Promise((r) => setTimeout(r, 340));
+
         const newAnswers = { ...answers, [question.id]: value };
         setAnswers(newAnswers);
         setSelectedValue(null);
+
+        // Show reveal for Q1–Q4 (indices 0–3)
+        if (currentIndex < 4) {
+            setRevealIndex(currentIndex);
+            setShowReveal(true);
+        }
+    };
+
+    // ── HANDLE REVEAL NEXT ────────────────────────────────────────────────
+    const handleRevealNext = async () => {
+        if (revealIndex === 4) {
+            // Reveal 5 is the final step — submit now
+            await submitSurvey(answers);
+            return;
+        }
+        setShowReveal(false);
         setDirection(1);
         setCurrentIndex((prev) => prev + 1);
     };
 
-    // ── HANDLE TEXT SUBMIT ────────────────────────────────────────────────
-    const handleTextSubmit = async () => {
-        const finalAnswers = { ...answers, [question.id]: textInput.trim() || "بدون تعليق" };
-        await submitSurvey(finalAnswers);
+    // ── HANDLE TEXT "NEXT" → show reveal 5 ───────────────────────────────
+    const handleTextSubmit = () => {
+        // Save the text answer then show the AI teaser reveal
+        const updatedAnswers = { ...answers, [question.id]: textInput.trim() || "بدون تعليق" };
+        setAnswers(updatedAnswers);
+        setRevealIndex(4);
+        setShowReveal(true);
     };
 
     // ── LOADING SCREEN ────────────────────────────────────────────────────
@@ -224,34 +291,134 @@ export default function SurveyPage() {
         );
     }
 
+    // ── SHARED HEADER ─────────────────────────────────────────────────────
+    const Header = () => (
+        <div className="flex-shrink-0 px-6 md:px-10 pt-8 pb-5">
+            <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2.5">
+                    <Image src="/ShopMate_logo.svg" alt="ShopMate" width={32} height={32} />
+                    <span className="text-base font-bold" style={{ color: '#69482d', fontFamily: 'var(--font-fredoka)' }}>ShopMate AI</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                    {questions.map((_, i) => (
+                        <motion.div key={i}
+                            animate={{ width: i === currentIndex && !showReveal ? 24 : 8, opacity: i <= currentIndex ? 1 : 0.3 }}
+                            transition={{ duration: 0.3 }}
+                            className="h-2 rounded-full"
+                            style={{ background: i === currentIndex && !showReveal ? '#e07b37' : '#69482d' }} />
+                    ))}
+                </div>
+            </div>
+            <div className="h-1 rounded-full overflow-hidden" style={{ background: 'rgba(105,72,45,0.12)' }}>
+                <motion.div animate={{ width: `${progress}%` }} transition={{ duration: 0.5, ease: "easeOut" }}
+                    className="h-full rounded-full" style={{ background: 'linear-gradient(90deg, #e07b37, #f5a05f)' }} />
+            </div>
+        </div>
+    );
+
+    // ── REVEAL SCREEN ─────────────────────────────────────────────────────
+    if (showReveal) {
+        const reveal = reveals[revealIndex];
+        return (
+            <div className="fixed inset-0 flex flex-col" style={{ background: '#dbe3c9' }}>
+                <Header />
+                <div className="flex-1 flex items-center justify-center px-5 overflow-hidden">
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={`reveal-${revealIndex}`}
+                            variants={revealVariants}
+                            initial="enter"
+                            animate="center"
+                            exit="exit"
+                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                            className="w-full max-w-lg"
+                        >
+                            <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 text-center"
+                                style={{ border: '1px solid rgba(224,123,55,0.1)' }}>
+
+                                {/* Pulsing emoji */}
+                                <motion.div
+                                    animate={{ scale: [1, 1.08, 1], rotate: [0, 3, -3, 0] }}
+                                    transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+                                    className="text-6xl md:text-8xl mb-6 leading-none"
+                                >
+                                    {reveal.emoji}
+                                </motion.div>
+
+                                {/* Accent chip */}
+                                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full mb-4"
+                                    style={{ background: 'rgba(224,123,55,0.1)' }}>
+                                    <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#e07b37' }} />
+                                    <span className="text-xs font-bold" style={{ color: '#e07b37' }}>
+                                        {revealIndex === 4 ? '🎉 المفاجأة الكبرى' : 'حل ShopMate AI'}
+                                    </span>
+                                </div>
+
+                                {/* Title */}
+                                <motion.h2
+                                    initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+                                    className="text-2xl md:text-3xl font-bold mb-4"
+                                    style={{ color: '#e07b37', fontFamily: 'var(--font-cairo), var(--font-fredoka), sans-serif', direction: 'rtl' }}
+                                >
+                                    {reveal.title}
+                                </motion.h2>
+
+                                {/* Description */}
+                                <motion.p
+                                    initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}
+                                    className="text-lg md:text-xl leading-relaxed mb-8"
+                                    style={{ color: '#69482d', fontFamily: 'var(--font-cairo), system-ui, sans-serif', direction: 'rtl', lineHeight: 1.8 }}
+                                >
+                                    {reveal.desc}
+                                </motion.p>
+
+                                {/* CTA */}
+                                <motion.button
+                                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28, type: "spring" }}
+                                    whileHover={!isSubmitting ? { scale: 1.03, boxShadow: '0 12px 32px rgba(224,123,55,0.45)' } : {}}
+                                    whileTap={!isSubmitting ? { scale: 0.97 } : {}}
+                                    onClick={handleRevealNext}
+                                    disabled={isSubmitting}
+                                    className="w-full py-5 rounded-2xl font-bold text-xl text-white flex items-center justify-center gap-3"
+                                    style={{
+                                        background: isSubmitting
+                                            ? 'linear-gradient(135deg, #c4622a 0%, #a0481c 100%)'
+                                            : 'linear-gradient(135deg, #e07b37 0%, #c4622a 100%)',
+                                        boxShadow: '0 8px 24px rgba(224,123,55,0.35)',
+                                        fontFamily: 'var(--font-cairo), var(--font-fredoka), sans-serif',
+                                        opacity: isSubmitting ? 0.85 : 1,
+                                    }}
+                                >
+                                    {isSubmitting ? (
+                                        <>
+                                            <motion.div
+                                                animate={{ rotate: 360 }}
+                                                transition={{ repeat: Infinity, duration: 0.9, ease: "linear" }}
+                                                className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+                                            />
+                                            جاري الإرسال...
+                                        </>
+                                    ) : revealIndex === 4 ? (
+                                        'إنهاء وإرسال رأيي 🚀'
+                                    ) : (
+                                        'كمل الاستبيان ➡️'
+                                    )}
+                                </motion.button>
+                            </div>
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
+                <div className="flex-shrink-0 px-8 pb-8 text-center">
+                    <p className="text-xs opacity-40" style={{ color: '#69482d' }}>مشاركتك تساعدنا نبني تجربة تسوق أفضل ليك 💪</p>
+                </div>
+            </div>
+        );
+    }
+
     // ── SURVEY SCREEN ─────────────────────────────────────────────────────
     return (
         <div className="fixed inset-0 flex flex-col overflow-hidden" style={{ background: '#dbe3c9' }}>
-
-            {/* Header */}
-            <div className="flex-shrink-0 px-6 md:px-10 pt-8 pb-5">
-                <div className="flex items-center justify-between mb-5">
-                    <div className="flex items-center gap-2.5">
-                        <Image src="/ShopMate_logo.svg" alt="ShopMate" width={32} height={32} />
-                        <span className="text-base font-bold" style={{ color: '#69482d', fontFamily: 'var(--font-fredoka)' }}>ShopMate AI</span>
-                    </div>
-                    {/* Pill indicators */}
-                    <div className="flex items-center gap-1.5">
-                        {questions.map((_, i) => (
-                            <motion.div key={i}
-                                animate={{ width: i === currentIndex ? 24 : 8, opacity: i <= currentIndex ? 1 : 0.3 }}
-                                transition={{ duration: 0.3 }}
-                                className="h-2 rounded-full"
-                                style={{ background: i === currentIndex ? '#e07b37' : '#69482d' }} />
-                        ))}
-                    </div>
-                </div>
-                {/* Progress */}
-                <div className="h-1 rounded-full overflow-hidden" style={{ background: 'rgba(105,72,45,0.12)' }}>
-                    <motion.div animate={{ width: `${progress}%` }} transition={{ duration: 0.5, ease: "easeOut" }}
-                        className="h-full rounded-full" style={{ background: 'linear-gradient(90deg, #e07b37, #f5a05f)' }} />
-                </div>
-            </div>
+            <Header />
 
             {/* Question area */}
             <div className="flex-1 flex flex-col items-center justify-center px-5 md:px-10 overflow-hidden">
@@ -281,7 +448,6 @@ export default function SurveyPage() {
                             }}>
                             {question.text}
                         </motion.h2>
-
 
                         {/* CHOICE question */}
                         {question.type === "choice" && (
@@ -314,17 +480,14 @@ export default function SurveyPage() {
                                                 (e.currentTarget as HTMLButtonElement).style.background = '#e07b37';
                                                 (e.currentTarget as HTMLButtonElement).style.transform = 'none';
                                             }}>
-                                            {/* Emoji bubble */}
                                             <div className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-2xl"
                                                 style={{ background: 'rgba(255,255,255,0.2)' }}>
                                                 {option.emoji}
                                             </div>
-                                            {/* Label */}
                                             <span className="flex-1 text-sm md:text-base font-bold leading-snug text-white"
                                                 style={{ fontFamily: 'var(--font-cairo), var(--font-fredoka), sans-serif', direction: 'rtl' }}>
                                                 {option.label}
                                             </span>
-                                            {/* Check indicator */}
                                             {isSelected && (
                                                 <div className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center"
                                                     style={{ background: 'rgba(255,255,255,0.3)' }}>
@@ -332,7 +495,6 @@ export default function SurveyPage() {
                                                 </div>
                                             )}
                                         </motion.button>
-
                                     );
                                 })}
                             </div>
@@ -352,7 +514,7 @@ export default function SurveyPage() {
                                         background: '#ffffff',
                                         color: '#69482d',
                                         border: '2px solid rgba(224,123,55,0.25)',
-                                        fontFamily: 'var(--font-fredoka)',
+                                        fontFamily: 'var(--font-cairo), system-ui, sans-serif',
                                         direction: 'rtl',
                                     }}
                                     onFocus={(e) => { e.currentTarget.style.borderColor = '#e07b37'; e.currentTarget.style.boxShadow = '0 0 0 4px rgba(224,123,55,0.15)'; }}
@@ -362,8 +524,8 @@ export default function SurveyPage() {
                                     whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.97 }}
                                     onClick={handleTextSubmit}
                                     className="w-full py-5 rounded-2xl font-bold text-xl text-white"
-                                    style={{ background: 'linear-gradient(135deg, #e07b37 0%, #c4622a 100%)', boxShadow: '0 8px 24px rgba(224,123,55,0.4)', fontFamily: 'var(--font-fredoka)' }}>
-                                    إرسال رأيي 🚀
+                                    style={{ background: 'linear-gradient(135deg, #e07b37 0%, #c4622a 100%)', boxShadow: '0 8px 24px rgba(224,123,55,0.4)', fontFamily: 'var(--font-cairo), var(--font-fredoka), sans-serif' }}>
+                                    التالي ➡️
                                 </motion.button>
                                 <p className="text-center text-xs opacity-50" style={{ color: '#69482d' }}>
                                     يمكنك تخطي هذا السؤال بالضغط على الزر مباشرة
@@ -374,7 +536,6 @@ export default function SurveyPage() {
                 </AnimatePresence>
             </div>
 
-            {/* Footer */}
             <div className="flex-shrink-0 px-8 pb-8 text-center">
                 <p className="text-xs opacity-40" style={{ color: '#69482d' }}>مشاركتك تساعدنا نبني تجربة تسوق أفضل ليك 💪</p>
             </div>
