@@ -20,6 +20,11 @@ export default function Sidebar() {
     const pathname = usePathname();
     const [isExpanded, setIsExpanded] = useState(false);
 
+    // Hide sidebar on full-screen routes
+    if (pathname.startsWith('/survey') || pathname.startsWith('/shinawy-analytics')) {
+        return null;
+    }
+
     return (
         <aside
             className={clsx(
